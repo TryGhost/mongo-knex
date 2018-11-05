@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
+const debug = require('debug')('test');
 
 const utils = require('../utils');
 const knex = utils.db.knex.sqlite();
@@ -36,27 +37,39 @@ const flatten = (jsonData) => {
 
 // Integration tests build a test database and
 // check that we get the exact data we expect from each query
-describe.only('Integration', function () {
+describe.only('Joins', function () {
     before(function () {
+        // DB TEST SETUP
+        this.testSuiteName = _.kebabCase(_.deburr(this.test.parent.title));
+        debug('Running setup for', this.testSuiteName);
+
         return utils.db.schema.down(knex)
             .then(() => utils.db.schema.up(knex))
             .then(() => {
-                const base = require('./fixtures/base');
-                return Promise.each(flatten(base), op => knex(op.table).insert(op.entry));
+                try {
+                    debug('Loading base fixtures for', this.testSuiteName);
+                    const base = require('./fixtures/base');
+                    return Promise.each(flatten(base), op => knex(op.table).insert(op.entry));
+                } catch (e) {
+                    debug('Not loading any base fixtures for', this.testSuiteName);
+                }
             });
     });
 
     after(function () {
+        // DB TEST TEARDOWN
         if (_.includes(process.argv, '--skip-teardown')) {
+            debug('Skipping teardown for', this.testSuiteName);
             return knex.destroy();
         }
 
+        debug('Running teardown for', this.testSuiteName);
         return utils.db.schema
             .down(knex)
             .then(() => knex.destroy());
     });
 
-    describe('One-to-Many Joins', function () {
+    describe('One-to-Many', function () {
         it('can match array in (single value)', function (done) {
             const queryJSON = {'authors.slug': {$in: ['sam']}};
 
@@ -106,29 +119,33 @@ describe.only('Integration', function () {
         });
     });
 
-    describe('Many-to-Many Joins: Simple Cases', function () {
+    describe('Many-to-Many: Simple Cases', function () {
         beforeEach(function () {
-            console.log('this', _.kebabCase(_.deburr(this.currentTest.parent.title)));
+            // DB TEST INIT
             // Before each test, we load data specific to this suite of tests
-            const localData = {
-                posts_tags: [
-                    {post_id: 1, tag_id: 1},
-                    {post_id: 2, tag_id: 2},
-                    {post_id: 3, tag_id: 3},
-                    {post_id: 4, tag_id: 1},
-                    {post_id: 4, tag_id: 2},
-                    {post_id: 5, tag_id: 1},
-                    {post_id: 6, tag_id: 1},
-                    {post_id: 6, tag_id: 2}
-                ]
-            };
+            this.testGroupName = _.kebabCase(_.deburr(this.currentTest.parent.title));
 
-            return Promise.each(flatten(localData), op => knex(op.table).insert(op.entry));
+            try {
+                let fixturesJSON = require(`./fixtures/${this.testGroupName}.json`);
+                this.fixtures = flatten(fixturesJSON);
+                debug('Loading fixtures for', this.testGroupName);
+                return Promise.each(this.fixtures, op => knex(op.table).insert(op.entry));
+            } catch (e) {
+                // No fixtures for this test group
+                debug('Not loading any fixtures for', this.testGroupName);
+            }
         });
 
         afterEach(function () {
+            // DB TEST RESET
             // After each test, we unload any data specific to this suite of tests
-            //return knex('posts_tags').truncate();
+            if (this.fixtures) {
+                debug('Unloading fixtures for', this.testGroupName);
+                return Promise.each(this.fixtures, op => knex(op.table).truncate());
+            } else {
+                // No fixtures for this test group
+                debug('Not unloading any fixtures for', this.testGroupName);
+            }
         });
 
         it('can match array in (single value)', function (done) {
@@ -147,7 +164,6 @@ describe.only('Integration', function () {
 
                     result.should.be.an.Array().with.lengthOf(3);
 
-
                     // Check we get the right data
                     // result.should.do.something;
 
@@ -164,7 +180,6 @@ describe.only('Integration', function () {
 
             // Check any intermediate values
             console.log('query', query.toQuery());
-
 
             // Perform the query against the DB
             query.select()
@@ -189,7 +204,6 @@ describe.only('Integration', function () {
 
             // Check any intermediate values
             console.log('query', query.toQuery());
-
 
             // Perform the query against the DB
             query.select()

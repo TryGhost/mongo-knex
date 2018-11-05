@@ -23,6 +23,7 @@
     "sqlite3": "4.0.2"
   },
   "dependencies": {
+    "debug": "^4.1.0",
     "lodash": "^4.17.10"
   }
 }
