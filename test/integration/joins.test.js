@@ -1,9 +1,5 @@
-const _ = require('lodash');
-const Promise = require('bluebird');
-const debug = require('debug')('test');
-
 const utils = require('../utils');
-const knex = utils.db.knex.sqlite();
+const knex = utils.db.client;
 
 const convertor = require('../../lib/convertor');
 
@@ -24,50 +20,14 @@ const makeQuery = query => convertor(knex('posts'), query, {
     }
 });
 
-const flatten = (jsonData) => {
-    const ops = [];
-    _.each(jsonData, (entries, table) => {
-        _.each(entries, (entry) => {
-            ops.push({table, entry});
-        });
-    });
-
-    return ops;
-};
-
 // Integration tests build a test database and
 // check that we get the exact data we expect from each query
 describe.only('Joins', function () {
-    before(function () {
-        // DB TEST SETUP
-        this.testSuiteName = _.kebabCase(_.deburr(this.test.parent.title));
-        debug('Running setup for', this.testSuiteName);
+    before(utils.db.setup(() => {
+        // Do things afterwards in a callback
+    }));
 
-        return utils.db.schema.down(knex)
-            .then(() => utils.db.schema.up(knex))
-            .then(() => {
-                try {
-                    debug('Loading base fixtures for', this.testSuiteName);
-                    const base = require('./fixtures/base');
-                    return Promise.each(flatten(base), op => knex(op.table).insert(op.entry));
-                } catch (e) {
-                    debug('Not loading any base fixtures for', this.testSuiteName);
-                }
-            });
-    });
-
-    after(function () {
-        // DB TEST TEARDOWN
-        if (_.includes(process.argv, '--skip-teardown')) {
-            debug('Skipping teardown for', this.testSuiteName);
-            return knex.destroy();
-        }
-
-        debug('Running teardown for', this.testSuiteName);
-        return utils.db.schema
-            .down(knex)
-            .then(() => knex.destroy());
-    });
+    after(utils.db.teardown());
 
     describe('One-to-Many', function () {
         it('can match array in (single value)', function (done) {
@@ -120,33 +80,9 @@ describe.only('Joins', function () {
     });
 
     describe('Many-to-Many: Simple Cases', function () {
-        beforeEach(function () {
-            // DB TEST INIT
-            // Before each test, we load data specific to this suite of tests
-            this.testGroupName = _.kebabCase(_.deburr(this.currentTest.parent.title));
+        beforeEach(utils.db.init());
 
-            try {
-                let fixturesJSON = require(`./fixtures/${this.testGroupName}.json`);
-                this.fixtures = flatten(fixturesJSON);
-                debug('Loading fixtures for', this.testGroupName);
-                return Promise.each(this.fixtures, op => knex(op.table).insert(op.entry));
-            } catch (e) {
-                // No fixtures for this test group
-                debug('Not loading any fixtures for', this.testGroupName);
-            }
-        });
-
-        afterEach(function () {
-            // DB TEST RESET
-            // After each test, we unload any data specific to this suite of tests
-            if (this.fixtures) {
-                debug('Unloading fixtures for', this.testGroupName);
-                return Promise.each(this.fixtures, op => knex(op.table).truncate());
-            } else {
-                // No fixtures for this test group
-                debug('Not unloading any fixtures for', this.testGroupName);
-            }
-        });
+        afterEach(utils.db.reset());
 
         it('can match array in (single value)', function (done) {
             const queryJSON = {'tags.slug': {$in: ['animal']}};
