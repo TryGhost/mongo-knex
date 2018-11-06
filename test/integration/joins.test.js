@@ -22,7 +22,7 @@ const makeQuery = query => convertor(knex('posts'), query, {
 
 // Integration tests build a test database and
 // check that we get the exact data we expect from each query
-describe.only('Joins', function () {
+describe.skip('Joins', function () {
     before(utils.db.setup(() => {
         // Do things afterwards in a callback
     }));
@@ -30,6 +30,13 @@ describe.only('Joins', function () {
     after(utils.db.teardown());
 
     describe('One-to-Many', function () {
+        // Use a named file
+        beforeEach(utils.db.init('test-fixture', () => {
+            // could do stuff after
+        }));
+
+        afterEach(utils.db.reset());
+
         it('can match array in (single value)', function (done) {
             const queryJSON = {'authors.slug': {$in: ['sam']}};
 
@@ -80,6 +87,7 @@ describe.only('Joins', function () {
     });
 
     describe('Many-to-Many: Simple Cases', function () {
+        // Use the default file named after the describe block, would be many-to-many-simple-cases
         beforeEach(utils.db.init());
 
         afterEach(utils.db.reset());
@@ -132,7 +140,7 @@ describe.only('Joins', function () {
                 .catch(done);
         });
 
-        it.only('can match array in (multiple values with x, y and xy)', function (done) {
+        it('can match array in (multiple values with x, y and xy)', function (done) {
             const queryJSON = {'tags.id': {$in: [1, 2]}};
 
             // Use the queryJSON to build a query

@@ -36,11 +36,11 @@ const flatten = (fixtureJson) => {
  *
  * look for a base fixture file to import
  */
-module.exports.setup = function setup(cb) {
-    cb = cb || _.noop;
+module.exports.setup = function setup(name, cb) {
+    cb = _.isFunction(name) ? name : cb || _.noop;
 
     return function innerSetup() {
-        this.testSuiteName = _.kebabCase(_.deburr(this.test.parent.title));
+        this.testSuiteName = _.isString(name) ? name : _.kebabCase(_.deburr(this.test.parent.title));
         debug('Running setup for', this.testSuiteName);
 
         return schema.down(client)
@@ -85,12 +85,12 @@ module.exports.teardown = function teardown(cb) {
  * Uses the name of the describe block
  * e.g. Many-to-many: Simple Cases -> many-to-many-simple-cases.json
  */
-module.exports.init = function init(cb) {
-    cb = cb || _.noop;
+module.exports.init = function init(name, cb) {
+    cb = _.isFunction(name) ? name : cb || _.noop;
 
     return function innerInit() {
         // Before each test, we load data specific to this suite of tests
-        this.testGroupName = _.kebabCase(_.deburr(this.currentTest.parent.title));
+        this.testGroupName = _.isString(name) ? name : _.kebabCase(_.deburr(this.currentTest.parent.title));
 
         try {
             let fixturesJSON = require(`./fixtures/${this.testGroupName}.json`);
