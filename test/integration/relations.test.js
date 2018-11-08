@@ -22,7 +22,7 @@ const makeQuery = query => convertor(knex('posts'), query, {
 
 // Integration tests build a test database and
 // check that we get the exact data we expect from each query
-describe.skip('Joins', function () {
+describe.skip('Relations', function () {
     before(utils.db.setup(() => {
         // Do things afterwards in a callback
     }));
