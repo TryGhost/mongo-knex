@@ -282,28 +282,3 @@ describe('Logical Groups', function () {
         });
     });
 });
-
-// @TODO: what to do with these unit tests?
-describe.skip('Relations', function () {
-    describe('IN with array of objects', function () {
-        it('can match array in (single value)', function () {
-            runQuery({'tags.slug': {$in: ['video']}})
-                .should.eql('select * from `posts` where `tags`.`slug` in (\'video\')');
-        });
-
-        it('can match array in (multiple values)', function () {
-            runQuery({'tags.slug': {$in: ['video', 'audio']}})
-                .should.eql('select * from `posts` where `tags`.`slug` in (\'video\', \'audio\')');
-        });
-
-        it('can match array NOT in (single value)', function () {
-            runQuery({'tags.slug': {$nin: ['video']}})
-                .should.eql('select * from `posts` where `tags`.`slug` not in (\'video\')');
-        });
-
-        it('can match array NOT in (multiple values)', function () {
-            runQuery({'tags.slug': {$nin: ['video', 'audio']}})
-                .should.eql('select * from `posts` where `tags`.`slug` not in (\'video\', \'audio\')');
-        });
-    });
-});
