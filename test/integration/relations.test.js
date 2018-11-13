@@ -88,7 +88,12 @@ describe('Relations', function () {
 
         describe('OR', function () {
             it('tags.slug IN (animal)', function () {
-                const mongoJSON = {'tags.slug': {$in: ['animal']}};
+                const mongoJSON = {
+                    'tags.slug': {
+                        $in: ['animal']
+                    }
+                };
+
                 const query = makeQuery(mongoJSON);
 
                 return query
@@ -99,7 +104,19 @@ describe('Relations', function () {
             });
 
             it('featured:true AND tags.slug IN (animal)', function () {
-                const mongoJSON = {$and: [{featured: true}, {'tags.slug': {$in: ['animal']}}]};
+                const mongoJSON = {
+                    $and: [
+                        {
+                            featured: true
+                        },
+                        {
+                            'tags.slug': {
+                                $in: ['animal']
+                            }
+                        }
+                    ]
+                };
+
                 const query = makeQuery(mongoJSON);
 
                 return query
@@ -110,7 +127,12 @@ describe('Relations', function () {
             });
 
             it('tags.id IN (2,3)', function () {
-                const mongoJSON = {'tags.id': {$in: [2, 3]}};
+                const mongoJSON = {
+                    'tags.id': {
+                        $in: [2, 3]
+                    }
+                };
+
                 const query = makeQuery(mongoJSON);
 
                 return query
