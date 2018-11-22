@@ -152,6 +152,25 @@ describe('Relations', function () {
                         result.should.be.an.Array().with.lengthOf(2);
                     });
             });
+
+            it('tags.slug NOT equal "classic" and tags.visibility is equal "public"', function () {
+                const mongoJSON = {
+                    'tags.visibility': 'public',
+                    'tags.slug': {
+                        $ne: 'classic'
+                    }
+                };
+
+                const query = makeQuery(mongoJSON);
+
+                return query
+                    .select()
+                    .then((result) => {
+                        result.should.be.an.Array().with.lengthOf(2);
+                        result[0].title.should.equal('The Bare Necessities');
+                        result[1].title.should.equal('When She Loved Me');
+                    });
+            });
         });
 
         describe('AND $and', function () {
