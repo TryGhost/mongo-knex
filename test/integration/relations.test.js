@@ -247,6 +247,28 @@ describe('Relations', function () {
                     });
             });
 
+            it('tags.slug is animal and sort_order is 0 and tags.visibility=public', function () {
+                const mongoJSON = {
+                    $and: [
+                        {
+                            'tags.slug': 'animal'
+                        },
+                        {
+                            'posts_tags.sort_order': 0
+                        }
+                    ]
+                };
+
+                const query = makeQuery(mongoJSON);
+
+                return query
+                    .select()
+                    .then((result) => {
+                        result.should.be.an.Array().with.lengthOf(1);
+                        result[0].title.should.equal('The Bare Necessities');
+                    });
+            });
+
             it('(tags.slug is animal and sort_order is 0) and tags.visibility=public', function () {
                 const mongoJSON = {
                     $and: [
@@ -562,6 +584,42 @@ describe('Relations', function () {
                     .then((result) => {
                         result.should.be.an.Array().with.lengthOf(1);
                         result[0].title.should.equal('The Bare Necessities');
+                    });
+            });
+
+            it('tags.slug NOT equal "animal" and posts_tags.sort_order is 0 and featured is false', function () {
+                // where primary tag is "animal"
+                const mongoJSON = {
+                    $and: [
+                        {
+                            $and: [
+                                {
+                                    'tags.slug': {
+                                        $ne: 'classic'
+                                    }
+                                },
+                                {
+                                    'posts_tags.sort_order': 1
+                                }
+                            ]
+                        },
+                        {
+                            featured: true
+                        }
+                    ]
+                };
+
+                const query = makeQuery(mongoJSON);
+                // NOTE: the negation is being put on the outer IN incorrectly
+                // console.log(query.toQuery());
+
+                return query
+                    .select()
+                    .then((result) => {
+                        result.should.be.an.Array().with.lengthOf(3);
+                        result[0].title.should.equal('Circle of Life');
+                        result[1].title.should.equal('He\'s a Tramp');
+                        result[2].title.should.equal('has internal tag');
                     });
             });
 
