@@ -351,7 +351,6 @@ describe('Relations', function () {
                 };
 
                 const query = makeQuery(mongoJSON);
-                console.log(query.toQuery());
 
                 return query
                     .select()
@@ -597,7 +596,7 @@ describe('Relations', function () {
 
         describe('Multiple where clauses for relations', function () {
             it('tags.slug equals "cgi" and posts_tags.sort_order is 0 and featured is true', function () {
-                // where primary tag is "animal"
+                // where primary tag is "cgi"
                 const mongoJSON = {
                     $and: [
                         {
