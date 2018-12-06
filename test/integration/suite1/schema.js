@@ -23,6 +23,7 @@ module.exports.up = function (knex) {
             table.string('name', 191);
             table.string('slug', 191);
             table.string('visibility', 191).defaultTo('public');
+            table.dateTime('created_at');
         }))
         .then(() => knex.schema.createTable('posts_tags', (table) => {
             table.increments('id').primary();

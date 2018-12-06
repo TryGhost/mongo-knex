@@ -95,25 +95,29 @@
             "id": 1,
             "name": "Classic",
             "slug": "classic",
-            "visibility": "public"
+            "visibility": "public",
+            "created_at": "2015-01-01"
         },
         {
             "id": 2,
             "name": "Animal",
             "slug": "animal",
-            "visibility": "public"
+            "visibility": "public",
+            "created_at": "2015-01-02"
         },
         {
             "id": 3,
             "name": "CGI",
             "slug": "cgi",
-            "visibility": "public"
+            "visibility": "public",
+            "created_at": "2015-06-21"
         },
         {
             "id": 4,
             "name": "#internal",
             "slug": "hash-internal",
-            "visibility": "internal"
+            "visibility": "internal",
+            "created_at": "2015-06-22"
         }
     ]
 }
