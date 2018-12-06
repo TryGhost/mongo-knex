@@ -306,7 +306,7 @@ describe('Relations', function () {
                 };
 
                 const query = makeQuery(mongoJSON);
-                console.log(query.toSQL());
+
                 return query
                     .select()
                     .then((result) => {
