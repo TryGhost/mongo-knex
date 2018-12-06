@@ -15,6 +15,7 @@ module.exports.up = function (knex) {
             table.boolean('featured').defaultsTo(false);
             table.string('image', 191).nullable();
             table.string('status', 191).nullable();
+            table.dateTime('published_at').nullable();
             table.integer('author_id').unsigned().references('users.id');
         }))
         .then(() => knex.schema.createTable('tags', (table) => {
