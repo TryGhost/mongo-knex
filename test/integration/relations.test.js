@@ -24,6 +24,11 @@ const makeQuery = (mongoJSON) => {
                 joinTable: 'posts_authors',
                 joinFrom: 'post_id',
                 joinTo: 'author_id'
+            },
+            posts_meta: {
+                tableName: 'posts_meta',
+                type: 'oneToOne',
+                joinFrom: 'post_id'
             }
         }
     });
@@ -934,6 +939,38 @@ describe('Relations', function () {
         });
     });
 
-    describe('[NOT IMPLEMENTED] One-to-One', function () {});
+    describe('One-to-One', function () {
+        describe('EQUALS $eq', function () {
+            it('posts_meta.meta_title equals "Meta of A Whole New World"', function () {
+                const mongoJSON = {
+                    'posts_meta.meta_title': 'Meta of A Whole New World'
+                };
+
+                const query = makeQuery(mongoJSON);
+
+                return query
+                    .select()
+                    .then((result) => {
+                        result.should.be.an.Array().with.lengthOf(1);
+                        result.should.matchIds([3]);
+                    });
+            });
+
+            xit('tags.visibility equals "internal"', function () {
+                const mongoJSON = {
+                    'tags.visibility': 'internal'
+                };
+
+                const query = makeQuery(mongoJSON);
+
+                return query
+                    .select()
+                    .then((result) => {
+                        result.should.be.an.Array().with.lengthOf(1);
+                        result.should.matchIds([8]);
+                    });
+            });
+        });
+    });
     describe('[NOT IMPLEMENTED] One-to-Many', function () {});
 });
