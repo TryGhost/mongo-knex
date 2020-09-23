@@ -119,5 +119,13 @@
             "visibility": "internal",
             "created_at": "2015-06-22"
         }
+    ],
+    "posts_meta": [
+        {
+            "id": 1,
+            "post_id": 3,
+            "meta_title": "Meta of A Whole New World",
+            "meta_description": "A whole new world with new horizons to pursue I'll chase them anywhere"
+        }
     ]
 }
