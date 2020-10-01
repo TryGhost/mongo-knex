@@ -952,7 +952,7 @@ describe('Relations', function () {
                     .select()
                     .then((result) => {
                         result.should.be.an.Array().with.lengthOf(1);
-                        result.should.matchIds([3]);
+                        result[0].meta_title.should.equal('Meta of A Whole New World');
                     });
             });
 
