@@ -956,9 +956,11 @@ describe('Relations', function () {
                     });
             });
 
-            xit('tags.visibility equals "internal"', function () {
+            it('posts_meta.meta_title not equal "Meta of A Whole New World"', function () {
                 const mongoJSON = {
-                    'tags.visibility': 'internal'
+                    'posts_meta.meta_title': {
+                        $ne: 'Meta of A Whole New World'
+                    }
                 };
 
                 const query = makeQuery(mongoJSON);
@@ -966,8 +968,10 @@ describe('Relations', function () {
                 return query
                     .select()
                     .then((result) => {
-                        result.should.be.an.Array().with.lengthOf(1);
-                        result.should.matchIds([8]);
+                        result.should.be.an.Array().with.lengthOf(7);
+                        result.forEach((post) => {
+                            'Meta of A Whole New World'.should.not.equal(post.meta_title);
+                        });
                     });
             });
         });
