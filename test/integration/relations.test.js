@@ -973,11 +973,70 @@ describe('Relations', function () {
                         // result should also contain records that do not have meta_title record - null
                         result.should.be.an.Array().with.lengthOf(7);
                         result.forEach((post) => {
-                            'Meta of A Whole New World'.should.not.equal(post.meta_title);
+                            'When She Loved Me'.should.not.equal(post.title);
                         });
                     });
             });
         });
+
+        describe('COMPARISONS $gt / $gte / $lt / $lte', function () {
+            it('posts_meta.like_count is > 10', function () {
+                const mongoJSON = {'posts_meta.like_count': {
+                    $gt: 10
+                }};
+
+                const query = makeQuery(mongoJSON);
+
+                return query
+                    .then((result) => {
+                        result.length.should.eql(1);
+                        result.should.matchIds([4]);
+                    });
+            });
+
+            it('posts_meta.like_count is >= 10', function () {
+                const mongoJSON = {'posts_meta.like_count': {
+                    $gte: '10'
+                }};
+
+                const query = makeQuery(mongoJSON);
+
+                return query
+                    .then((result) => {
+                        result.length.should.eql(2);
+                        result.should.matchIds([3, 4]);
+                    });
+            });
+
+            it('posts_meta.like_count is < 42', function () {
+                const mongoJSON = {'posts_meta.like_count': {
+                    $lt: '42'
+                }};
+
+                const query = makeQuery(mongoJSON);
+
+                return query
+                    .then((result) => {
+                        result.length.should.eql(1);
+                        result.should.matchIds([3]);
+                    });
+            });
+
+            it('posts_meta.like_count is <= 42', function () {
+                const mongoJSON = {'posts_meta.like_count': {
+                    $lte: '42'
+                }};
+
+                const query = makeQuery(mongoJSON);
+
+                return query
+                    .then((result) => {
+                        result.length.should.eql(2);
+                        result.should.matchIds([3, 4]);
+                    });
+            });
+        });
     });
+
     describe('[NOT IMPLEMENTED] One-to-Many', function () {});
 });
