@@ -952,10 +952,12 @@ describe('Relations', function () {
                     .select()
                     .then((result) => {
                         result.should.be.an.Array().with.lengthOf(1);
-                        result[0].meta_title.should.equal('Meta of A Whole New World');
+                        result[0].title.should.equal('When She Loved Me');
                     });
             });
+        });
 
+        describe('NEGATION $ne', function () {
             it('posts_meta.meta_title not equal "Meta of A Whole New World"', function () {
                 const mongoJSON = {
                     'posts_meta.meta_title': {
@@ -968,6 +970,7 @@ describe('Relations', function () {
                 return query
                     .select()
                     .then((result) => {
+                        // result should also contain records that do not have meta_title record - null
                         result.should.be.an.Array().with.lengthOf(7);
                         result.forEach((post) => {
                             'Meta of A Whole New World'.should.not.equal(post.meta_title);
