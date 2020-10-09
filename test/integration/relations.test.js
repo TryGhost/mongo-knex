@@ -939,7 +939,7 @@ describe('Relations', function () {
         });
     });
 
-    describe.only('One-to-One', function () {
+    describe('One-to-One', function () {
         describe('EQUALS $eq', function () {
             it('posts_meta.meta_title equals "Meta of A Whole New World"', function () {
                 const mongoJSON = {
@@ -952,7 +952,7 @@ describe('Relations', function () {
                     .select()
                     .then((result) => {
                         result.should.be.an.Array().with.lengthOf(1);
-                        result[0].title.should.equal('When She Loved Me');
+                        result[0].title.should.equal('A Whole New World');
                     });
             });
         });
@@ -973,7 +973,7 @@ describe('Relations', function () {
                         // result should also contain records that do not have meta_title record - null
                         result.should.be.an.Array().with.lengthOf(7);
                         result.forEach((post) => {
-                            'When She Loved Me'.should.not.equal(post.title);
+                            'A Whole New World'.should.not.equal(post.title);
                         });
                     });
             });
@@ -1004,7 +1004,7 @@ describe('Relations', function () {
                 return query
                     .then((result) => {
                         result.length.should.eql(3);
-                        result.should.matchIds([3, 4, 5]);
+                        result.should.matchIds([1, 4, 5]);
                     });
             });
 
@@ -1018,7 +1018,7 @@ describe('Relations', function () {
                 return query
                     .then((result) => {
                         result.length.should.eql(1);
-                        result.should.matchIds([3]);
+                        result.should.matchIds([1]);
                     });
             });
 
@@ -1032,7 +1032,7 @@ describe('Relations', function () {
                 return query
                     .then((result) => {
                         result.length.should.eql(3);
-                        result.should.matchIds([3, 4, 5]);
+                        result.should.matchIds([1, 4, 5]);
                     });
             });
         });
@@ -1080,7 +1080,7 @@ describe('Relations', function () {
                     .select()
                     .then((result) => {
                         result.should.be.an.Array().with.lengthOf(1);
-                        result.should.matchIds([3]);
+                        result.should.matchIds([1]);
                     });
             });
 
@@ -1224,255 +1224,15 @@ describe('Relations', function () {
             });
         });
 
-        xdescribe('OR $or', function () {
-            it('any author is pat or leslie', function () {
+        describe('OR $or', function () {
+            it('basic case', function () {
                 const mongoJSON = {
                     $or: [
                         {
-                            'authors.slug': 'leslie'
+                            'posts_meta.meta_title': 'Meta of Circle of Life'
                         },
                         {
-                            'authors.slug': 'pat'
-                        }
-                    ]
-                };
-
-                const query = makeQuery(mongoJSON);
-
-                return query
-                    .select()
-                    .then((result) => {
-                        result.should.be.an.Array().with.lengthOf(7);
-                        result.should.matchIds([1, 3, 4, 5, 6, 7, 8]);
-                    });
-            });
-
-            it('any author is sam or any tag is cgi', function () {
-                const mongoJSON = {
-                    $or: [
-                        {
-                            'authors.slug': 'sam'
-                        },
-                        {
-                            'tags.slug': 'cgi'
-                        }
-                    ]
-                };
-
-                const query = makeQuery(mongoJSON);
-
-                return query
-                    .select()
-                    .then((result) => {
-                        result.should.be.an.Array().with.lengthOf(4);
-                        result.should.matchIds([2, 3, 4, 8]);
-                    });
-            });
-
-            it('any author is not pat or any tag is in [animal]', function () {
-                const mongoJSON = {
-                    $or: [
-                        {
-                            'authors.slug': {
-                                $ne: 'pat'
-                            }
-                        },
-                        {
-                            'tags.slug': {
-                                $in: ['animal']
-                            }
-                        }
-                    ]
-                };
-
-                const query = makeQuery(mongoJSON);
-
-                return query
-                    .select()
-                    .then((result) => {
-                        result.should.be.an.Array().with.lengthOf(4);
-                        result.should.matchIds([2, 4, 6, 8]);
-                    });
-            });
-
-            it('any author is pat or leslie or lots of other do not collide when grouping', function () {
-                const mongoJSON = {
-                    $or: [
-                        {
-                            'authors.slug': 'leslie'
-                        },
-                        {
-                            'authors.slug': 'pat'
-                        }
-                    ]
-                };
-
-                _.times(100, (idx) => {
-                    const author = {'authors.slug': `author-${idx}`};
-                    mongoJSON.$or.push(author);
-                });
-
-                const query = makeQuery(mongoJSON);
-
-                return query
-                    .select()
-                    .then((result) => {
-                        result.should.be.an.Array().with.lengthOf(7);
-                        result.should.matchIds([1, 3, 4, 5, 6, 7, 8]);
-                    });
-            });
-
-            describe('Multiple conditions applied to the joining table and to the destination table', function () {
-                it('tags.slug equals "animal" and posts_tags.sort_order is 0 OR author_id is 1', function () {
-                    const mongoJSON = {
-                        $or: [
-                            {
-                                $and: [
-                                    {
-                                        'tags.slug': 'animal'
-                                    },
-                                    {
-                                        'posts_tags.sort_order': 0
-                                    },
-                                    {
-                                        featured: false
-                                    }
-                                ]
-                            },
-                            {
-                                author_id: 1
-                            }
-                        ]
-                    };
-
-                    const query = makeQuery(mongoJSON);
-
-                    return query
-                        .select()
-                        .then((result) => {
-                            result.should.be.an.Array().with.lengthOf(6);
-                            result.should.matchIds([1, 2, 3, 5, 6, 7]);
-                        });
-                });
-
-                it('(tags.slug = animal and sort_order = 0) OR visibility:internal', function () {
-                    const mongoJSON = {
-                        $or: [
-                            {
-                                $and: [
-                                    {
-                                        'tags.slug': 'animal'
-                                    },
-                                    {
-                                        'posts_tags.sort_order': 0
-                                    }
-                                ]
-                            },
-                            {
-                                'tags.visibility': 'internal'
-                            }
-                        ]
-                    };
-
-                    const query = makeQuery(mongoJSON);
-
-                    return query
-                        .select()
-                        .then((result) => {
-                            result.should.be.an.Array().with.lengthOf(2);
-                            result.should.matchIds([2, 8]);
-                        });
-                });
-
-                it('tags.slug = animal OR sort_order = 0 OR visibility:internal', function () {
-                    const mongoJSON = {
-                        $or: [
-                            {
-                                'tags.slug': 'animal'
-                            },
-                            {
-                                'posts_tags.sort_order': 0
-                            },
-                            {
-                                'tags.visibility': 'internal'
-                            }
-                        ]
-                    };
-
-                    const query = makeQuery(mongoJSON);
-
-                    return query
-                        .select()
-                        .then((result) => {
-                            result.should.be.an.Array().with.lengthOf(7);
-                            result.should.matchIds([1, 2, 3, 4, 5, 6, 8]);
-                        });
-                });
-            });
-        });
-
-        xdescribe('IN $in', function () {
-            it('tags.slug IN (animal)', function () {
-                const mongoJSON = {
-                    'tags.slug': {
-                        $in: ['animal']
-                    }
-                };
-
-                const query = makeQuery(mongoJSON);
-
-                return query
-                    .select()
-                    .then((result) => {
-                        result.should.be.an.Array().with.lengthOf(3);
-                        result.should.matchIds([2, 4, 6]);
-                    });
-            });
-
-            it('tags.slug IN (animal, cgi)', function () {
-                const mongoJSON = {
-                    'tags.slug': {
-                        $in: ['animal', 'cgi']
-                    }
-                };
-
-                const query = makeQuery(mongoJSON);
-
-                return query
-                    .select()
-                    .then((result) => {
-                        result.should.be.an.Array().with.lengthOf(4);
-                        result.should.matchIds([2, 3, 4, 6]);
-                    });
-            });
-
-            it('tags.id IN (2,3)', function () {
-                const mongoJSON = {
-                    'tags.id': {
-                        $in: [2, 3]
-                    }
-                };
-
-                const query = makeQuery(mongoJSON);
-
-                return query
-                    .select()
-                    .then((result) => {
-                        result.should.be.an.Array().with.lengthOf(4);
-                        result.should.matchIds([2, 3, 4, 6]);
-                    });
-            });
-
-            it('tags.slug IN (animal) AND featured:true', function () {
-                const mongoJSON = {
-                    $and: [
-                        {
-                            'tags.slug': {
-                                $in: ['animal']
-                            }
-                        },
-                        {
-                            featured: true
+                            'posts_meta.meta_title': 'Meta of Be Our Guest'
                         }
                     ]
                 };
@@ -1483,73 +1243,18 @@ describe('Relations', function () {
                     .select()
                     .then((result) => {
                         result.should.be.an.Array().with.lengthOf(2);
-                        result.should.matchIds([4, 6]);
-                    });
-            });
-        });
-
-        xdescribe('NOT IN $nin', function () {
-            it('tags.slug NOT IN (animal)', function () {
-                const mongoJSON = {
-                    'tags.slug': {
-                        $nin: ['animal']
-                    }
-                };
-
-                const query = makeQuery(mongoJSON);
-
-                return query
-                    .select()
-                    .then((result) => {
-                        result.should.be.an.Array().with.lengthOf(5);
-                        result.should.matchIds([1, 3, 5, 7, 8]);
+                        result.should.matchIds([4, 5]);
                     });
             });
 
-            it('tags.slug NOT IN (animal, cgi)', function () {
+            it('different fields', function () {
                 const mongoJSON = {
-                    'tags.slug': {
-                        $nin: ['animal', 'cgi']
-                    }
-                };
-
-                const query = makeQuery(mongoJSON);
-
-                return query
-                    .select()
-                    .then((result) => {
-                        result.should.be.an.Array().with.lengthOf(4);
-                        result.should.matchIds([1, 5, 7, 8]);
-                    });
-            });
-
-            it('tags.id NOT IN (2,3)', function () {
-                const mongoJSON = {
-                    'tags.id': {
-                        $nin: [2, 3]
-                    }
-                };
-
-                const query = makeQuery(mongoJSON);
-
-                return query
-                    .select()
-                    .then((result) => {
-                        result.should.be.an.Array().with.lengthOf(4);
-                        result.should.matchIds([1, 5, 7, 8]);
-                    });
-            });
-
-            it('tags.slug NOT IN (classic, animal) AND featured:true', function () {
-                const mongoJSON = {
-                    $and: [
+                    $or: [
                         {
-                            'tags.slug': {
-                                $nin: ['classic', 'animal']
-                            }
+                            'posts_meta.meta_title': 'Meta of Circle of Life'
                         },
                         {
-                            featured: true
+                            'posts_meta.like_count': 10
                         }
                     ]
                 };
@@ -1559,8 +1264,212 @@ describe('Relations', function () {
                 return query
                     .select()
                     .then((result) => {
-                        result.should.be.an.Array().with.lengthOf(3);
-                        result.should.matchIds([3, 7, 8]);
+                        result.should.be.an.Array().with.lengthOf(2);
+                        result.should.matchIds([1, 4]);
+                    });
+            });
+
+            it('not equal and in grouping', function () {
+                const mongoJSON = {
+                    $or: [
+                        {
+                            'posts_meta.like_count': {
+                                $ne: 42
+                            }
+                        },
+                        {
+                            'posts_meta.meta_description': {
+                                $in: [null]
+                            }
+                        }
+                    ]
+                };
+
+                const query = makeQuery(mongoJSON);
+
+                return query
+                    .select()
+                    .then((result) => {
+                        result.should.be.an.Array().with.lengthOf(6);
+                        result.should.matchIds([1, 2, 3, 6, 7, 8]);
+                    });
+            });
+
+            it('any author is pat or leslie or lots of other do not collide when grouping', function () {
+                const mongoJSON = {
+                    $or: [
+                        {
+                            'posts_meta.meta_title': 'Meta of Circle of Life'
+                        },
+                        {
+                            'posts_meta.meta_title': 'Meta of A Whole New World'
+                        }
+                    ]
+                };
+
+                _.times(100, (idx) => {
+                    const condition = {'posts_meta.meta_title': `meta-title-${idx}`};
+                    mongoJSON.$or.push(condition);
+                });
+
+                const query = makeQuery(mongoJSON);
+
+                return query
+                    .select()
+                    .then((result) => {
+                        result.should.be.an.Array().with.lengthOf(2);
+                        result.should.matchIds([1, 4]);
+                    });
+            });
+
+            describe('Multiple conditions applied to the joining table and to the destination table', function () {
+                it('tags.slug equals "animal" and posts_tags.sort_order is 0 OR author_id is 1', function () {
+                    const mongoJSON = {
+                        $or: [
+                            {
+                                $and: [
+                                    {
+                                        'posts_meta.meta_title': 'Meta of Be Our Guest'
+                                    },
+                                    {
+                                        'posts_meta.like_count': 42
+                                    }
+                                ]
+                            },
+                            {
+                                featured: false
+                            }
+                        ]
+                    };
+
+                    const query = makeQuery(mongoJSON);
+
+                    return query
+                        .select()
+                        .then((result) => {
+                            result.should.be.an.Array().with.lengthOf(3);
+                            result.should.matchIds([1, 2, 5]);
+                        });
+                });
+            });
+        });
+
+        describe('IN $in', function () {
+            it('basic case', function () {
+                const mongoJSON = {
+                    'posts_meta.like_count': {
+                        $in: [42]
+                    }
+                };
+
+                const query = makeQuery(mongoJSON);
+
+                return query
+                    .select()
+                    .then((result) => {
+                        result.should.be.an.Array().with.lengthOf(2);
+                        result.should.matchIds([4, 5]);
+                    });
+            });
+
+            it('multipe parameters', function () {
+                const mongoJSON = {
+                    'posts_meta.like_count': {
+                        $in: [42, 11]
+                    }
+                };
+
+                const query = makeQuery(mongoJSON);
+
+                return query
+                    .select()
+                    .then((result) => {
+                        result.should.be.an.Array().with.lengthOf(2);
+                        result.should.matchIds([4, 5]);
+                    });
+            });
+
+            it('combination with other fields', function () {
+                const mongoJSON = {
+                    $and: [
+                        {
+                            'posts_meta.like_count': {
+                                $in: [10]
+                            }
+                        },
+                        {
+                            title: 'A Whole New World'
+                        }
+                    ]
+                };
+
+                const query = makeQuery(mongoJSON);
+
+                return query
+                    .select()
+                    .then((result) => {
+                        result.should.be.an.Array().with.lengthOf(1);
+                        result.should.matchIds([1]);
+                    });
+            });
+        });
+
+        describe('NOT IN $nin', function () {
+            it('basic case', function () {
+                const mongoJSON = {
+                    'posts_meta.like_count': {
+                        $nin: [42]
+                    }
+                };
+
+                const query = makeQuery(mongoJSON);
+
+                return query
+                    .select()
+                    .then((result) => {
+                        result.should.be.an.Array().with.lengthOf(6);
+                        result.should.matchIds([1, 2, 3, 6, 7, 8]);
+                    });
+            });
+
+            it('multiple values', function () {
+                const mongoJSON = {
+                    'posts_meta.like_count': {
+                        $nin: [42, 10]
+                    }
+                };
+
+                const query = makeQuery(mongoJSON);
+
+                return query
+                    .select()
+                    .then((result) => {
+                        result.should.be.an.Array().with.lengthOf(5);
+                        result.should.matchIds([2, 3, 6, 7, 8]);
+                    });
+            });
+
+            it('multiple values with filter on parent table', function () {
+                const mongoJSON = {
+                    $and: [
+                        {
+                            'posts_meta.like_count': {
+                                $nin: [42]
+                            }
+                        },
+                        {
+                            featured: false
+                        }
+                    ]
+                };
+
+                const query = makeQuery(mongoJSON);
+
+                return query
+                    .select()
+                    .then((result) => {
+                        result.should.be.an.Array().with.lengthOf(2);
+                        result.should.matchIds([1, 2]);
                     });
             });
         });
