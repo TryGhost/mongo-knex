@@ -4,7 +4,23 @@ const convertor = require('../../lib/convertor');
 
 const runQuery = query => convertor(knex('posts'), query).toQuery();
 
+
+describe.only('Like', function () {
+    it('$regex', function () {
+        runQuery({title: {$regex: /Post/i}})
+            .should.eql('select * from `posts` where lower(`posts`.`title`) like \'%post%\'');
+    });
+
+    it('$not', function () {
+        runQuery({title: {$not: /Post/i}})
+            .should.eql('select * from `posts` where lower(`posts`.`title`) not like \'%post%\'');
+    });
+
+})
+
 describe('Simple Expressions', function () {
+
+
     it('should match based on simple id', function () {
         runQuery({id: 3})
             .should.eql('select * from `posts` where `posts`.`id` = 3');
